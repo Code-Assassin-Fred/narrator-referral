@@ -184,7 +184,7 @@ export default function Home() {
                   Browse Root Signup Trees
                 </h2>
                 <p className="text-xs text-zinc-700 dark:text-zinc-300 mt-1">
-                  Davis has {rootTreeStats.length} top-level root signups. Compare the overall network value and size of each root tree.
+                  There are {rootTreeStats.length} top-level root signups. Compare the overall network value and size of each root tree.
                 </p>
               </div>
 

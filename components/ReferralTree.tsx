@@ -194,7 +194,11 @@ export default function ReferralTree({ treeData, filters, onSelectNarrator }: Re
       nodeEnter.append('text')
         .attr('x', 14)
         .attr('y', -8)
-        .attr('class', 'text-xs font-bold font-sans fill-zinc-950 dark:fill-zinc-50 select-none')
+        .attr('fill', '#09090b') // zinc-950 – strong black for max readability
+        .attr('font-size', '12px')
+        .attr('font-weight', '700')
+        .attr('font-family', 'system-ui, -apple-system, sans-serif')
+        .style('user-select', 'none')
         .text((d: any) => {
           const name = d.data.name;
           if (!name) return d.data.code;
@@ -205,14 +209,22 @@ export default function ReferralTree({ treeData, filters, onSelectNarrator }: Re
       nodeEnter.append('text')
         .attr('x', 14)
         .attr('y', 8)
-        .attr('class', 'text-[10px] font-mono fill-zinc-700 dark:fill-zinc-300 select-none')
+        .attr('fill', '#18181b') // zinc-900 – dark & visible for referral codes
+        .attr('font-size', '10px')
+        .attr('font-weight', '600')
+        .attr('font-family', 'ui-monospace, SFMono-Regular, monospace')
+        .style('user-select', 'none')
         .text((d: any) => d.data.name ? d.data.code : 'No Name');
 
       // Metrics badge (Hours / Clips)
       nodeEnter.append('text')
         .attr('x', 14)
         .attr('y', 20)
-        .attr('class', 'text-[10px] font-semibold font-sans fill-indigo-600 dark:fill-indigo-400 select-none')
+        .attr('fill', '#4338ca') // indigo-700 – bold, saturated for metrics
+        .attr('font-size', '10px')
+        .attr('font-weight', '700')
+        .attr('font-family', 'system-ui, -apple-system, sans-serif')
+        .style('user-select', 'none')
         .text((d: any) => `${d.data.hours.toFixed(2)}h • ${d.data.clips}c`);
 
       // Expand/Collapse Circle Button on the right edge
