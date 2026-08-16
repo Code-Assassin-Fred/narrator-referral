@@ -1,14 +1,32 @@
 'use client';
 
-import React from 'react';
-import { TreeNode, getSubtreeStats } from '../lib/tree';
+import React, { useMemo } from 'react';
+import { TreeNode, getSubtreeStats, getPerLevelStats } from '../lib/tree';
+import { FilterState } from './Filters';
 
 interface StatsPanelProps {
   activeNode: TreeNode;
+  filters: FilterState;
 }
 
-export default function StatsPanel({ activeNode }: StatsPanelProps) {
+export default function StatsPanel({ activeNode, filters }: StatsPanelProps) {
   const stats = getSubtreeStats(activeNode);
+
+  // Filter predicate matching the same logic used by ReferralTree for dimming
+  const matchesFilters = (n: TreeNode): boolean => {
+    if (n.hours < filters.minHours || n.hours > filters.maxHours) return false;
+    if (n.clips < filters.minClips || n.clips > filters.maxClips) return false;
+    const hasChildren = n.children && n.children.length > 0;
+    if (filters.nodeType === 'roots' && n.parentId !== null) return false;
+    if (filters.nodeType === 'leaves' && hasChildren) return false;
+    if (filters.nodeType === 'has-children' && !hasChildren) return false;
+    return true;
+  };
+
+  const levelStats = useMemo(
+    () => getPerLevelStats(activeNode, matchesFilters),
+    [activeNode, filters]
+  );
 
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-none p-4 sm:p-6 shadow-sm flex flex-col gap-6">
@@ -28,7 +46,7 @@ export default function StatsPanel({ activeNode }: StatsPanelProps) {
               </p>
             </div>
             <span className="px-2.5 py-1 text-2xs font-bold bg-indigo-600 dark:bg-indigo-700 text-white border-0 rounded-none">
-              Depth: {activeNode.depth}
+              Depth {activeNode.depth}
             </span>
           </div>
 
@@ -155,6 +173,59 @@ export default function StatsPanel({ activeNode }: StatsPanelProps) {
             </div>
           </div>
         </div>
+
+        {/* Per-Level Breakdown Table */}
+        {levelStats.length > 0 && (
+          <div className="mt-4">
+            <div className="flex items-center gap-2 mb-2.5">
+              <span className="w-2 h-2 bg-amber-500" />
+              <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                Per-Level Breakdown
+              </p>
+            </div>
+            <div className="border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950 rounded-none overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-0">
+                <thead>
+                  <tr className="border-b border-amber-200 dark:border-amber-800">
+                    <th className="py-1.5 px-2 text-2xs font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
+                      Lvl
+                    </th>
+                    <th className="py-1.5 px-2 text-2xs font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200 text-right">
+                      People
+                    </th>
+                    <th className="py-1.5 px-2 text-2xs font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200 text-right">
+                      Hours
+                    </th>
+                    <th className="py-1.5 px-2 text-2xs font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200 text-right">
+                      Clips
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-amber-100 dark:divide-amber-900">
+                  {levelStats.map((row) => (
+                    <tr key={row.level} className="hover:bg-amber-100/60 dark:hover:bg-amber-900/30 transition-colors">
+                      <td className="py-1.5 px-2 text-xs font-bold text-amber-700 dark:text-amber-400 whitespace-nowrap">
+                        L{row.level}
+                        <span className="ml-0.5 text-3xs font-normal text-zinc-600 dark:text-zinc-400">
+                          {row.level === 1 ? 'child' : row.level === 2 ? 'g.child' : ''}
+                        </span>
+                      </td>
+                      <td className="py-1.5 px-2 text-xs font-semibold text-zinc-900 dark:text-zinc-100 text-right">
+                        {row.people}
+                      </td>
+                      <td className="py-1.5 px-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 text-right">
+                        {row.hours.toFixed(2)}
+                      </td>
+                      <td className="py-1.5 px-2 text-xs font-semibold text-violet-700 dark:text-violet-400 text-right">
+                        {row.clips.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

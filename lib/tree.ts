@@ -27,6 +27,52 @@ export type SubtreeStats = {
   selfClips: number;
 };
 
+export type LevelStats = {
+  level: number;
+  people: number;
+  hours: number;
+  clips: number;
+};
+
+/**
+ * Computes per-relative-depth stats below a selected node.
+ * Level 1 = direct children, level 2 = grandchildren, etc.
+ * An optional `matchesFilter` predicate excludes nodes that don't pass filters.
+ */
+export function getPerLevelStats(
+  subtree: TreeNode,
+  matchesFilter?: (node: TreeNode) => boolean
+): LevelStats[] {
+  const levelMap = new Map<number, { people: number; hours: number; clips: number }>();
+
+  function traverse(node: TreeNode, relativeDepth: number) {
+    for (const child of node.children) {
+      const level = relativeDepth + 1;
+      // Only count nodes that pass the filter (or all nodes if no filter)
+      if (!matchesFilter || matchesFilter(child)) {
+        const entry = levelMap.get(level) || { people: 0, hours: 0, clips: 0 };
+        entry.people += 1;
+        entry.hours += child.hours;
+        entry.clips += child.clips;
+        levelMap.set(level, entry);
+      }
+      traverse(child, level);
+    }
+  }
+
+  traverse(subtree, 0);
+
+  // Convert to sorted array
+  return Array.from(levelMap.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([level, data]) => ({
+      level,
+      people: data.people,
+      hours: Number(data.hours.toFixed(3)),
+      clips: data.clips,
+    }));
+}
+
 /**
  * Builds a lookup map and links parent -> children nodes from the flat list of narrators.
  */

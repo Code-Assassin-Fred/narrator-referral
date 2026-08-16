@@ -335,7 +335,7 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               {/* Left Column: Filters and Stats Panel */}
               <div className="lg:col-span-1 flex flex-col gap-6 order-2 lg:order-1">
-                <StatsPanel activeNode={activeSubtree} />
+                <StatsPanel activeNode={activeSubtree} filters={filters} />
                 <Filters
                   filters={filters}
                   onChange={handleFilterChange}
